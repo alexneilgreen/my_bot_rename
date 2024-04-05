@@ -1,0 +1,549 @@
+----------------------------------------------------------------------------------------------------
+Setting Up Your Network for ROS | Getting Ready to Build Robots with ROS #2
+----------------------------------------------------------------------------------------------------
+
+Created new network config file in /etc/netplan/ called "02-network-manager-all.yaml"
+ - Use command "sudo pluma /etc/netplan/02-network-manager-all.yaml"
+
+Installed openssh-server using "sudo apt install openssh-server"
+
+To access Robot Pi remotely, use "ssh baaa@192.168.1.132"
+To access Dev Machine remotely, use "ssh baaa@192.168.1.173"
+
+NOT DONE>>>Modify Netplan file
+
+
+
+----------------------------------------------------------------------------------------------------
+How to install ROS | Getting Ready to Build Robots with ROS #3
+----------------------------------------------------------------------------------------------------
+
+Install ROS 2 Humble vis Debian Packages
+
+Commands are as follows:
+
+    sudo apt update && sudo apt install curl gnupg2 lsb-release
+
+    sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key  -o /usr/share/keyrings/ros-archive-keyring.gpg
+
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+
+    sudo apt update
+
+    sudo apt install ros-humble-desktop
+
+    sudo apt install ros-humble-ros-base
+
+Testing to ensure everything works
+
+    source /opt/ros/humble/setup.bash
+
+    On Dev Machine: ros2 run demo_nodes_py listener
+    On Robot Pi: ros2 run demo_nodes_py talker
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+ ---------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- 
+
+Installing Colcon & Exstensions
+
+Commands are as follows:
+
+    sudo apt install python3-colcon-common-extensions
+
+Testing to ensure everything works
+
+    colcon
+
+ ---------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- 
+
+Adding ROS2 Humble Source to bashrc file
+
+Commands are as follows:
+
+    echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+
+Now talker and listener demo should work without source command
+
+Testing to ensure everything works
+
+    On Dev Machine: ros2 run demo_nodes_cpp listener
+    On Robot Pi: ros2 run demo_nodes_cpp talker
+
+Done
+
+
+
+----------------------------------------------------------------------------------------------------
+10 Things You Need To Know About ROS! | Getting Ready to Build Robots with ROS #4
+----------------------------------------------------------------------------------------------------
+
+This is just a video explaining the concepts and tools within ROS or more specifically ROS2
+
+Done
+
+
+
+----------------------------------------------------------------------------------------------------
+Making Your First ROS Package | Getting Ready to Build Robots with ROS #5
+----------------------------------------------------------------------------------------------------
+
+Creating a ROS2 Workspace enviornment
+
+    LINK: https://articulatedrobotics.xyz/ready-for-ros-5-packages/
+
+Install git
+
+Generate SSH key on home
+
+    ssh-keygen
+
+Copy SSH key
+
+Add to github profile
+
+Setup repository and follow instructions for SSH, not HTTPS
+
+Done
+
+
+
+----------------------------------------------------------------------------------------------------
+The ROS Transformation System (TF) | Getting Ready to Build Robots with ROS #6
+----------------------------------------------------------------------------------------------------
+
+This is just a video explaining the concepts and math behind Transforms (Covered in intro to robotics)
+
+It is a very insightful video talking about frames, directions, vectors, and applications
+
+Done
+
+
+
+----------------------------------------------------------------------------------------------------
+How do we describe a robot? With URDF! | Getting Ready to Build Robots with ROS #7
+----------------------------------------------------------------------------------------------------
+
+This video is where we start our project repository called my_bot and create a URDF based on the 
+3D model that I printed for our senior design project.
+
+Looks at URDF, XACRO, and best practices
+
+Done
+
+
+
+----------------------------------------------------------------------------------------------------
+Simulating Robots with gazebo and ROS | Getting Ready to Build Robots with ROS #8
+----------------------------------------------------------------------------------------------------
+
+Installing Gazebo
+
+    sudo apt install ros-humble-gazebo-ros-pkgs
+
+Test installation
+    
+    gazebo /usr/share/gazebo-11/worlds/seesaw.world
+
+https://classic.gazebosim.org/tutorials?tut=install_ubuntu
+
+Done
+
+
+
+----------------------------------------------------------------------------------------------------
+Making a Mobile Robot #2 - Creating a rough 3D model of our robot with URDF
+----------------------------------------------------------------------------------------------------
+
+This is the video that explains how to start making a URDF of our robot. Since our robot is 
+different than the one in the video, our files will not look exactly the same.
+
+Installing xacro and joint state publisher gui at the root of each machine
+
+    sudo apt install ros-humble-xacro ros-humble-joint-state-publisher-gui
+
+Note: Using colcon build --symlink-install will update all files as they are saved. You only need to
+      use it again if you add another file to your build
+
+To run simulation:
+
+    Note: Before you get started make sure to source build from dev_ws/
+        source install/setup.bash
+        
+    1. Run Robot State Publisher with the following command from dev_ws/
+        ros2 launch my_bot rsp.launch.py
+        
+    2. Run Joint State Publisher with the following command from dev_ws/
+        ros2 run joint_state_publisher_gui joint_state_publisher_gui
+        
+    3. Run RVIZ using the following configuration command from dev_ws/
+        rviz2 -d src/my_bot/config/view_bot.rviz 
+
+Done
+
+
+
+----------------------------------------------------------------------------------------------------
+Making a Mobile Robot #3 - Concept Design Gazebo
+----------------------------------------------------------------------------------------------------
+
+Note: Before you get started make sure to source build from dev_ws/
+    source install/setup.bash
+
+1. Launch robot_state_publisher in sim mode
+    ros2 launch my_bot rsp.launch.py use_sim_time:=true
+
+2. Launch Gazebo with ROS compatibility
+    2.1. Install Gazebo on first
+        sudo apt install ros-humble-gazebo-ros-pkgs
+    2.2. Run gazebo in new terminal
+        ros2 launch gazebo_ros gazebo.launch.py
+
+3. Spawn robot in gazebo with spawn script
+    Note: bot_name can be changed since it is only what is displayed in gazebo
+        ros2 run gazebo_ros spawn_entity.py -topic robot_description -entity bot_name
+
+Now create a launch file to run all 3 of these at once. The file is called launch_sim.launch.py.
+Use the following command to call it.
+    ros2 launch my_bot launch_sim.launch.py
+
+Create Differential drive control file "gazebo_control.xacro"
+    colcon build --symlink-install
+
+Run gazebo with keyboard controll. Run each command in a different terminal.
+    ros2 launch my_bot launch_sim.launch.py
+    ros2 run teleop_twist_keyboard teleop_twist_keyboard
+
+Run gazebo in test world. Run each command in a different terminal.
+    ros2 launch my_bot launch_sim.launch.py world:=./src/my_bot/worlds/obstacles.world
+    ros2 run teleop_twist_keyboard teleop_twist_keyboard
+
+Done
+
+
+
+----------------------------------------------------------------------------------------------------
+XBOX CONTROLLER TESTING
+----------------------------------------------------------------------------------------------------
+
+Here i am attempting to get an xbox 360 controller to work with the Pi over bluetooth.
+ - If this fails, I have a logitech controller on order with a USB bluetooth adapter
+
+ Terminal Commands:
+ 
+    sudo -s
+
+    sudo echo 'Y' > /sys/module/bluetooth/parameters/disable_ertm
+    
+New Terminal:
+
+    sudo apt install joystick
+    
+    sudo apt install jstest-gtk
+
+At this point we purchased a wireless logitech controller with its own usb adapter for connecting
+to the controller. This has proven to be very effective and only cost.
+
+NOT DONE>>>Will Complete Later
+
+
+
+----------------------------------------------------------------------------------------------------
+Making a Mobile Robot #4 - Raspberry Pi
+----------------------------------------------------------------------------------------------------
+
+Done
+
+
+
+----------------------------------------------------------------------------------------------------
+Making a Mobile Robot #5 - Power Concepts
+----------------------------------------------------------------------------------------------------
+
+Done
+
+
+
+----------------------------------------------------------------------------------------------------
+Making a Mobile Robot #6 - 	Robot Power 2: Electric Boogaloo
+----------------------------------------------------------------------------------------------------
+
+Done
+
+
+
+----------------------------------------------------------------------------------------------------
+Making a Mobile Robot #7 - The Ultimate Guide to using Motors in Robotics (including ROS, Raspberry Pi)
+----------------------------------------------------------------------------------------------------
+
+Done - Note we are using a arduino mega and 4 motors as opposed to an aruino nano and 2 motors.
+       Because of this, I am going to have to write my own ROS to arduino Bridge.
+
+Motors are connected to arduino mega via a breadboard and motor controllers.
+Now I am getting the software running in order to move the motoros.
+
+Download joshnewans github code to test motors.
+
+Commands in Terminal
+    
+    sudo apt install python3-serial
+
+NOT DONE>>>WAITING TO HEAR BACK FROM JOSH NEWANS (March 16th)
+
+
+
+----------------------------------------------------------------------------------------------------
+Making a Mobile Robot #8 - Adding a Lidar
+----------------------------------------------------------------------------------------------------
+
+sensor_msgs/LaserScan publishes a 2D laser scan of enviornment
+
+sensor_msgs/PointCloud2 publishes a 3D laser scan of enviornment
+
+In the home directory, install rplidar driver
+    sudo apt install ros-humble-rplidar-ros
+
+To run lidar once plugged in and driver Installed. Note: serial_port may be different
+    ros2 run rplidar_ros rplidar_composition --ros-args -p serial_port:=/dev/ttyUSB0 -p frame_id:=laser_frame -p angle_compensate:=true -p scan_mode:=Standard
+
+To find proper serial port run this command
+    ls /dev/serial/by-path
+Note: that running the same command but "by-id" will return the lidar's name
+
+    CURRENT ERROR:
+        [INFO] [1710644813.187891183] [rplidar_node]: RPLidar running on ROS2 package rplidar_ros. RPLIDAR SDK Version:2.0.0
+        [ERROR] [1710644817.238306934] [rplidar_node]: Error, operation time out. SL_RESULT_OPERATION_TIMEOUT! 
+        [ros2run]: Process exited with failure 255
+
+Solution:
+    Different Lidar Driver for ROS2 Humble
+
+New Driver: https://index.ros.org/p/rplidar_ros/
+
+After cloning this driver into <ws_name>/src the following was done.
+
+    1. Inside of <ws_name>/src/rplidar_ros/launch, duplicatee the rplidar_a1_launch.py file.
+        1.1 Rename the original to rplidar_a1_launch_original.py.
+        1.2 In the new rplidar_a1_launch.py, Modify the code to follow the articulatedrobotics 
+            parameters.
+    
+    2. Create new file called rplidar.launch.py to follow articulatedrobotics naming convention
+        2.1 Within this file create a launch file similar to the articulatedrobotics example that
+            works with new driver.
+
+How to run Lidar with RVIZ.
+
+    This should be very similar to the articulatedrobotics example but is different due to the 
+    different driver and file location. For the following instructions I will have the example from
+    the videos and then my version. Note the video examples will NOT work, but this should inform us 
+    on how to properly call stuff later.
+
+To run Lidar Node with launch file from <ws_name>
+Note: The launch file for actual is within <ws_name>/src/rplidar_ros/launch
+    Video:  ros2 launch rplidar.launch.py
+    Actual: ros2 launch rplidar_ros rplidar.launch.py
+
+Stop and Start Motor in a different terminal from <ws_name> once Lidar Node is running.
+Note: This one does work the same for both
+    Video (Start):  ros2 service call /start_motor std_srvs/srv/Empty {}
+    Video (Stop):   ros2 service call /stop_motor std_srvs/srv/Empty {}
+    ACtual (Start): ros2 service call /start_motor std_srvs/srv/Empty {}
+    ACtual (Stop):  ros2 service call /stop_motor std_srvs/srv/Empty {}
+
+Killall rplidar nodes.
+    Video:  killall rplidar_composition
+    ACtual: killall rplidar_node
+
+Notes for RVIZ
+    Set global options -> Fixed Frame to laser_frame
+    Add a Laser scan
+    Set topic to /scan
+
+Done
+
+
+
+----------------------------------------------------------------------------------------------------
+Making a Mobile Robot #9 - Adding a Camera
+----------------------------------------------------------------------------------------------------
+
+In thise section I created the xacro files for the front and rear cameras.
+
+These files are called front_camera.xacro and rear_camera.xacro.
+    Note: I will probably have to go back in and change the sensor data since we ordered new cameras
+
+Now cameras are simulated in Gazebo and RVIZ
+
+In order to use all the image viewing tools required run the following Commands
+    sudo apt install libraspberrypi-bin v4l-utils ros-humble-image-transport-plugins
+    sudo apt install ros-humble-v4l2-camera
+    sudo usermod -aG video baaa
+
+Then to see if cameras are recognized use the following command
+    vcgencmd get_camera
+
+NOTE: At this point, our original cameras (Arducam IMX708) were not recognized so we had to stop
+      development until out new cameras come in (Raspberry Pi Cam M2). We need to finish this
+      tutorial once the our new cameras come in.
+
+ ---------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- 
+Development resumed with new cameras (March 19th)
+ ---------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- 
+
+New Cameras connected.
+
+For Ubuntu MATE to recognize the cameras, a modification is needed in the /boot/firmware/config.txt
+file. Reference the articulatedrobotics Foxy to Humble video (11:00)
+
+Then use the following command to run the camera node
+    ros2 run v4l2_camera v4l2_camera_node --ros-args -p image_size:="[640,480]" -p camera_frame_id:=front_camera_optical_link
+
+In a different terminal run the following command to view the camera feed
+    ros2 run rqt_image_view rqt_image_view
+
+Now select the camera feed option you would like to displayed
+
+Finally we created the camera node launch file
+    Single camera use: original_camera.launch.py
+    Dual camera use: camera.launch.py
+
+Done
+
+
+
+----------------------------------------------------------------------------------------------------
+Making a Mobile Robot #11 - Designing a chassis for our robot!(+ other fixes)
+----------------------------------------------------------------------------------------------------
+
+Lightdm fix & Package cloning
+    I did not do this because it only addresses a minor usage of resources
+
+Chassis Design - I did this between SD1 and SD2
+
+
+
+----------------------------------------------------------------------------------------------------
+Making a Mobile Robot #12 - Solving the problem EVERY robot has (with ros2_control)
+----------------------------------------------------------------------------------------------------
+
+    Modified robot.urdf.xacro
+    Created ros2_control.xacro
+    Created my_controllers.yaml
+
+    sudo apt install ros-humble-ros2-control ros-humble-ros2-controllers ros-humble-gazebo-ros2-control
+
+    *DELETED COMMENT AT THE TOP OF robot_core.urdf. CAUSED COMPILATION ERROR*
+
+    ros2 launch my_bot launch_sim.launch.py world:=./src/my_bot/worlds/obstacles.world
+    ros2 run controller_manager spawner diff_cont
+    ros2 run controller_manager spawner joint_broad
+    ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=diff_cont/cmd_vel_unstamped
+
+    Modified launch_sim.launch.py
+
+    ros2 launch my_bot launch_sim.launch.py world:=./src/my_bot/worlds/obstacles.world
+    ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=diff_cont/cmd_vel_unstamped   
+
+    Done 
+
+
+----------------------------------------------------------------------------------------------------
+Making a Mobile Robot #12a - ros2_control Extra Bits
+----------------------------------------------------------------------------------------------------
+
+    Change launch files (launch_sim.launch.py & rsp.launch.py)
+
+    Create gazebo_params.yaml
+        Note: We probably still need to swap from differential drive to skid-steer
+
+    Change robot.urdf.xacro
+
+    Updated diff_cont in my_controllers.yaml to work like skid-steer. Now there is no need to swap.
+    I referenced this site: https://wiki.ros.org/diff_drive_controller
+
+    Done
+
+----------------------------------------------------------------------------------------------------
+Making a Mobile Robot #13 - Using ros2_control to drive out robot (off the ege of the bench...)
+----------------------------------------------------------------------------------------------------
+
+    Modified my_controllers.yaml and ros2_control.xacro
+
+    Created launch_robot.launch.py
+
+
+
+----------------------------------------------------------------------------------------------------
+Making a Mobile Robot #15 - Easy SLAM with ROS using slam_toolbox
+----------------------------------------------------------------------------------------------------
+
+Add base_footprint joint/line
+
+    sudo apt install ros-humble-slam-toolbox
+
+Slam toolbox mode: Online Asynchronous
+    Online - Working on live data rather than recorded logs
+    Asynchronous - Doesn't have to process absolutely every scan. Instead it focuses on processing 
+                   the latest scan.
+
+Copying params file into local directory (The next command should be from the home directory)
+    cp /opt/ros/humble/share/slam_toolbox/config/mapper_params_online_async.yaml dev_ws/src/my_bot/config
+
+Launch Gazebo, Rviz, and the Keyboard Controller in seperate terminals. Then launch SLAM with this:
+    ros2 launch slam_toolbox online_async_launch.py slam_params_file:=./src/my_bot/config/mapper_params_online_async.yaml use_sim_time:=true
+
+Then in Rviz add a map with topic /map
+
+Now the fixed frame has two options for Global Options
+    1. odom - map might jump around but robot model won't
+    2. map - robot might jump around but map won't (Suggested)
+
+In Rviz (After you have a map) click panels>add panel>SlamToolboxPanel
+    Save Map is an oldeer format to provide data to other systems
+    Serialize Map is to save map to use again with slam_toolbox
+
+    Save in both formats
+
+For localization instructions go to 15:30 (Test with new obstacle world)
+
+Install for NAV2
+    sudo apt install ros-humble-navigation2 ros-humble-nav2-bringup ros-humble-turtlebot3*
+    Ref: https://navigation.ros.org/getting_started/index.html
+
+AMCL
+
+Run Map Server (Publishes map data on map_server nodee posting to /map topic)
+    ros2 run nav2_map_server map_server --ros-args -p yaml_filename:=my_test_hall_save.yaml -p use_sim_time:=true
+
+In new tab run nav2 to activate map node
+    ros2 run nav2_util lifecycle_bringup map_server
+
+IF MAP DOESN'T SHOW UP 20:00
+
+Now launch AMCL
+    ros2 run nav2_amcl amcl --ros-args -p use_sim_time:=true
+
+In new tab run nav2 to activate amcl node
+    ros2 run nav2_util lifecycle_bringup amcl
+
+Initialize Pose (equivalent of setting /initialpose topic) 21:30
+
+REAL ROBOT IMPLEMENTATION (22:30)
+
+----------------------------------------------------------------------------------------------------
+Making a Mobile Robot #16 - Making robot navigation easy with NAV2 and ROS!!
+----------------------------------------------------------------------------------------------------
+//NOT DONE YET//
+    sudo apt install ros-humble-twist-mux
+
+
+
+----------------------------------------------------------------------------------------------------
+Making a Mobile Robot #17 - One thing every robot should have...
+----------------------------------------------------------------------------------------------------
+
+GUI VIDEO
+
+
+
+----------------------------------------------------------------------------------------------------
+Making a Mobile Robot #18 - Object Tracking with OpenCV
+----------------------------------------------------------------------------------------------------
