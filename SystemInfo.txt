@@ -12,6 +12,23 @@ To access Dev Machine remotely, use "ssh baaa@192.168.1.173"
 
 NOT DONE>>>Modify Netplan file
 
+network:
+  version: 2
+  renderer: NetworkManager
+  
+  wifis:
+    wlp0s20f3:
+      dhcp4: no
+      addresses: [172.20.10.6/28]
+      routes:
+      - to: default
+        via: 172.20.10.1
+      nameservers:
+        addresses: [172.20.10.1]
+      access-points:
+        "iPhone 15 Pro":
+          password: "ae8bde99"
+
 
 
 ----------------------------------------------------------------------------------------------------
